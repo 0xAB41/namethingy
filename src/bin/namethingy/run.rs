@@ -5,8 +5,8 @@ use namethingy::NameGenerator;
 
 use crate::args::*;
 
-pub fn run() -> Result<(), ProgramArgError> {
-    let args = ProgramArgs::parse()?;
+pub fn run() -> Result<(), Error> {
+    let args = Args::parse()?;
 
     let mut name_generator = NameGenerator::with_order(args.order);
 

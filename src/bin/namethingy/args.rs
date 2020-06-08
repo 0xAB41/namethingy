@@ -4,41 +4,41 @@ use std::path::Path;
 
 use clap::{App, Arg, ArgMatches};
 
-pub struct ProgramArgs {
+pub struct Args {
     pub order: usize,
     pub limit: usize,
     pub corpus: String,
 }
 
 #[derive(Debug)]
-pub struct ProgramArgError {
-    pub kind: ProgramArgErrorKind
+pub struct Error {
+    pub kind: ErrorKind
 }
 
 #[derive(Debug)]
-pub enum ProgramArgErrorKind {
+pub enum ErrorKind {
     NumberParseError,
     InvalidFilePath,
 }
 
-impl Display for ProgramArgError {
+impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
-            ProgramArgErrorKind::InvalidFilePath => write!(f, "Invalid file path"),
-            ProgramArgErrorKind::NumberParseError => write!(f, "Invalid number")
+            ErrorKind::InvalidFilePath => write!(f, "Invalid file path"),
+            ErrorKind::NumberParseError => write!(f, "Invalid number")
         }
     }
 }
 
-impl From<std::num::ParseIntError> for ProgramArgError {
+impl From<std::num::ParseIntError> for Error {
     fn from(_: ParseIntError) -> Self {
-        ProgramArgError {
-            kind: ProgramArgErrorKind::NumberParseError
+        Error {
+            kind: ErrorKind::NumberParseError
         }
     }
 }
 
-impl ProgramArgs {
+impl Args {
     fn get_arg_matches<'a>() -> ArgMatches<'a> {
         App::new("NameThingy")
             .version("0.2")
@@ -64,21 +64,21 @@ impl ProgramArgs {
             .get_matches()
     }
 
-    pub fn parse() -> Result<ProgramArgs, ProgramArgError> {
-        ProgramArgs::from_arg_matches(ProgramArgs::get_arg_matches())
+    pub fn parse() -> Result<Args, Error> {
+        Args::from_arg_matches(Args::get_arg_matches())
     }
 
-    fn from_arg_matches(arg_matches: ArgMatches) -> Result<ProgramArgs, ProgramArgError> {
+    fn from_arg_matches(arg_matches: ArgMatches) -> Result<Args, Error> {
         let order: usize = arg_matches.value_of("order").unwrap().parse()?;
         let limit: usize = arg_matches.value_of("limit").unwrap().parse()?;
         let corpus = arg_matches.value_of("corpus").unwrap().to_string();
         let corpus_path = Path::new(&corpus);
         if !(corpus_path.exists() && corpus_path.is_file()) {
-            return Err(ProgramArgError {
-                kind: ProgramArgErrorKind::InvalidFilePath
+            return Err(Error {
+                kind: ErrorKind::InvalidFilePath
             });
         }
-        Ok(ProgramArgs {
+        Ok(Args {
             order,
             limit,
             corpus,

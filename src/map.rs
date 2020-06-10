@@ -31,6 +31,7 @@ pub trait MapRandom<T> {
 #[derive(Debug, PartialEq)]
 pub enum MapRandomError {
     EmptyMap,
+    Unknown
 }
 
 pub type MapRandomResult<T> = Result<T, MapRandomError>;
@@ -52,7 +53,8 @@ impl<T> MapRandom<T> for FrequencyMap<T> where T: Hashable{
                 return Ok(key);
             }
         }
-        unreachable!()
+
+        return Err(MapRandomError::Unknown)
     }
 }
 

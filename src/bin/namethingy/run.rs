@@ -19,7 +19,6 @@ pub fn run() -> Result<(), Error> {
     name_generator
         .iter()
         .take(args.limit)
-        .filter_map(Result::ok)
         .for_each(|x| println!("{}", x));
     Ok(())
 }

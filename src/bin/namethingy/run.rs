@@ -15,8 +15,11 @@ pub fn run() -> Result<(), Error> {
     lines.flatten().filter(|s| !s.is_empty()).for_each(|w| {
         name_generator.train_word(&w);
     });
-    for _i in 0..args.limit {
-        println!("{}", name_generator.generate());
-    }
+
+    name_generator
+        .iter()
+        .take(args.limit)
+        .filter_map(Result::ok)
+        .for_each(|x| println!("{}", x));
     Ok(())
 }

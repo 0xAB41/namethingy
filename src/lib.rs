@@ -1,9 +1,35 @@
 use std::collections::HashMap;
 mod map;
 use map::*;
+use std::fmt::{Display, Formatter};
 
 type Token = Option<char>;
 type Ngram = Vec<Token>;
+
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    Empty,
+    Unknown
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Error::Empty => write!(f, "Generator is not trained/empty"),
+            Error::Unknown => write!(f, "Unknown error")
+        }
+    }
+}
+
+impl From<MapRandomError> for Error {
+    fn from(m: MapRandomError) -> Self {
+        match m {
+            MapRandomError::EmptyMap => Error::Empty,
+        }
+    }
+}
+
+pub type Result<T> = core::result::Result<T, Error>;
 
 pub struct NameGenerator {
     prefix_ngrams: FrequencyMap<Ngram>,
@@ -55,11 +81,11 @@ impl NameGenerator {
         self
     }
 
-    pub fn generate(&self) -> String {
-        let mut ngram = self.prefix_ngrams.choose_weighted().ok().unwrap().clone();
+    pub fn generate(&self) -> Result<String> {
+        let mut ngram = self.prefix_ngrams.choose_weighted()?.clone();
         let mut chars: Vec<char> = ngram.iter().flatten().copied().collect();
         while let Some(next_states) = self.state_map.get(&ngram) {
-            if let Some(c) = next_states.choose_weighted().ok().unwrap() {
+            if let Some(c) = next_states.choose_weighted()? {
                 ngram = ngram[1..].to_vec();
                 ngram.push(Some(*c));
                 chars.push(*c);
@@ -67,6 +93,30 @@ impl NameGenerator {
                 break;
             }
         }
-        chars.iter().collect::<String>()
+
+        Ok(chars.iter().collect::<String>())
     }
+
+    pub fn iter(&self) -> Iter {
+        Iter {
+            name_generator: self
+        }
+    }
+}
+
+pub struct Iter<'a> {
+    name_generator: &'a NameGenerator
+}
+
+impl Iterator for Iter<'_> {
+    type Item = Result<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(self.name_generator.generate())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+   use super::*;
 }
